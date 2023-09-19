@@ -10,7 +10,7 @@ library(tidyverse)
 
 
 # Importing FAS Litters CSV
-Let's import the 'FAS_litters.csv' csv into a dataframe, then use the janitor package to clean up the column names.
+Let's import the `FAS_litters.csv` csv into a dataframe, then use the janitor package to clean up the column names.
 
 ```{r}
 litters_df = 
@@ -64,6 +64,11 @@ str(litters_df)
 skimr::skim(litters_df)
 ```
 
+# Options in `read_*`
 
+```{r}
+litters_df = 
+  read_csv("Data/FAS_litters.csv")
+```
 
 
