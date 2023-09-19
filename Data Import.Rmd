@@ -3,9 +3,11 @@ title: "Data Import"
 output: html_document
 ---
 
-# Loading TidyVerse
+# Loading Libraries
 ```{r, echo=FALSE, collapse=TRUE}
 library(tidyverse)
+library(readxl)
+library(haven)
 ```
 
 
@@ -68,7 +70,43 @@ skimr::skim(litters_df)
 
 ```{r}
 litters_df = 
-  read_csv("Data/FAS_litters.csv")
+  read_csv("Data/FAS_litters.csv", skip = 10)
 ```
 
+Look at NA values.
+
+```{r}
+litters_df = 
+  read_csv("Data/FAS_litters.csv", na = c("NA",19))
+```
+
+Column types
+```{r}
+litters_df = 
+  read_csv("Data/FAS_litters.csv", 
+           col_types = 
+             cols(
+               Group = col_character(),
+               `GD of Birth` = col_integer())
+           )
+```
+
+## Other File Types
+
+Import an xlsx file first.
+
+```{r}
+mlb_df = 
+  read_excel("Data/mlb11.xlsx")
+```
+
+Import a SAS file.
+```{r}
+pulse_df = 
+  read_sas("Data/public_pulse_data.sas7bdat")
+```
+
+```{r, eval=FALSE}
+view(pulse_df)
+```
 

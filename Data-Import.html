@@ -353,8 +353,8 @@ display: none;
 </div>
 
 
-<div id="loading-tidyverse" class="section level1">
-<h1>Loading TidyVerse</h1>
+<div id="loading-libraries" class="section level1">
+<h1>Loading Libraries</h1>
 <pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.3     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
@@ -706,7 +706,19 @@ and a histogram of responses.</p>
 <div id="options-in-read_" class="section level1">
 <h1>Options in <code>read_*</code></h1>
 <pre class="r"><code>litters_df = 
-  read_csv(&quot;Data/FAS_litters.csv&quot;)</code></pre>
+  read_csv(&quot;Data/FAS_litters.csv&quot;, skip = 10)</code></pre>
+<pre><code>## New names:
+## Rows: 39 Columns: 8
+## ── Column specification
+## ──────────────────────────────────────────────────────── Delimiter: &quot;,&quot; chr
+## (2): Con8, #3/5/2/2/95 dbl (6): 28.5, NA, 20, 8...6, 0, 8...8
+## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## • `8` -&gt; `8...6`
+## • `8` -&gt; `8...8`</code></pre>
+<p>Look at NA values.</p>
+<pre class="r"><code>litters_df = 
+  read_csv(&quot;Data/FAS_litters.csv&quot;, na = c(&quot;NA&quot;,19))</code></pre>
 <pre><code>## Rows: 49 Columns: 8
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -715,6 +727,24 @@ and a histogram of responses.</p>
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>Column types</p>
+<pre class="r"><code>litters_df = 
+  read_csv(&quot;Data/FAS_litters.csv&quot;, 
+           col_types = 
+             cols(
+               Group = col_character(),
+               `GD of Birth` = col_integer())
+           )</code></pre>
+<div id="other-file-types" class="section level2">
+<h2>Other File Types</h2>
+<p>Import an xlsx file first.</p>
+<pre class="r"><code>mlb_df = 
+  read_excel(&quot;Data/mlb11.xlsx&quot;)</code></pre>
+<p>Import a SAS file.</p>
+<pre class="r"><code>pulse_df = 
+  read_sas(&quot;Data/public_pulse_data.sas7bdat&quot;)</code></pre>
+<pre class="r"><code>view(pulse_df)</code></pre>
+</div>
 </div>
 
 
