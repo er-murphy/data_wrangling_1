@@ -11,7 +11,7 @@
 
 
 
-<title>Simple document</title>
+<title>Data Import</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,23 +348,46 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Simple document</h1>
+<h1 class="title toc-ignore">Data Import</h1>
 
 </div>
 
 
-<p>I’m an R Markdown document!</p>
-<div id="section-1" class="section level1">
-<h1>Section 1</h1>
-<p>Here’s a <strong>code chunk</strong> that samples from a <em>normal
-distribution</em>:</p>
-<pre class="r"><code>samp = rnorm(100)
-length(samp)</code></pre>
-<pre><code>## [1] 100</code></pre>
+<div id="loading-tidyverse" class="section level1">
+<h1>Loading TidyVerse</h1>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.3     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.2     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div id="section-2" class="section level1">
-<h1>Section 2</h1>
-<p>I can take the mean of the sample, too! The mean is 0.1185134.</p>
+<div id="importing-fas-litters-csv" class="section level1">
+<h1>Importing FAS Litters CSV</h1>
+<p>Let’s import the ‘FAS_litters.csv’ csv into a dataframe, then use the
+janitor package to clean up the column names.</p>
+<pre class="r"><code>litters_df = 
+  read_csv(&quot;Data/FAS_litters.csv&quot;)</code></pre>
+<pre><code>## Rows: 49 Columns: 8
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (2): Group, Litter Number
+## dbl (6): GD0 weight, GD18 weight, GD of Birth, Pups born alive, Pups dead @ ...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>litters_df = 
+  janitor::clean_names(litters_df)</code></pre>
+<p>Now going to import the same dataset using an absolute path.</p>
+<pre class="r"><code>litters_df_abs = 
+  read_csv(&quot;~/Documents/Programming/R/Data Science 1/Lectures/Data Wrangling 1/Data/FAS_litters.csv&quot;)
+
+litters_df_abs = 
+  janitor::clean_names(litters_df_abs)</code></pre>
 </div>
 
 
