@@ -399,6 +399,7 @@ litters_df</code></pre>
 ## 10 Con8  #3/5/2/2/95           28.5        NA            20               8
 ## # ℹ 39 more rows
 ## # ℹ 2 more variables: pups_dead_birth &lt;dbl&gt;, pups_survive &lt;dbl&gt;</code></pre>
+<pre class="r"><code>write_csv(litters_df, &quot;Data/litters_cleaned.csv&quot;)</code></pre>
 <p>Now going to import the same dataset using an absolute path.</p>
 </div>
 <div id="importing-fas-pups-csv" class="section level1">
@@ -744,6 +745,12 @@ and a histogram of responses.</p>
 <pre class="r"><code>pulse_df = 
   read_sas(&quot;Data/public_pulse_data.sas7bdat&quot;)</code></pre>
 <pre class="r"><code>view(pulse_df)</code></pre>
+</div>
+<div id="base-r" class="section level2">
+<h2>Base R</h2>
+<p>Don’t do this</p>
+<pre class="r"><code>litters_df = 
+  read.csv(&quot;Data/FAS_litters.csv&quot;)</code></pre>
 </div>
 </div>
 

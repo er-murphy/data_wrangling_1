@@ -22,6 +22,8 @@ litters_df =
   janitor::clean_names(litters_df)
 
 litters_df
+
+write_csv(litters_df, "Data/litters_cleaned.csv")
 ```
 
 Now going to import the same dataset using an absolute path.
@@ -109,4 +111,16 @@ pulse_df =
 ```{r, eval=FALSE}
 view(pulse_df)
 ```
+
+## Base R
+
+Don't do this
+
+```{r, eval=FALSE}
+litters_df = 
+  read.csv("Data/FAS_litters.csv")
+```
+
+
+
 
