@@ -1,0 +1,69 @@
+---
+title: "Data Import"
+output: html_document
+---
+
+# Loading TidyVerse
+```{r, echo=FALSE, collapse=TRUE}
+library(tidyverse)
+```
+
+
+# Importing FAS Litters CSV
+Let's import the 'FAS_litters.csv' csv into a dataframe, then use the janitor package to clean up the column names.
+
+```{r}
+litters_df = 
+  read_csv("Data/FAS_litters.csv")
+
+litters_df = 
+  janitor::clean_names(litters_df)
+
+litters_df
+```
+
+Now going to import the same dataset using an absolute path.
+```{r, include = FALSE}
+litters_df_abs = 
+  read_csv("~/Documents/Programming/R/Data Science 1/Lectures/Data Wrangling 1/Data/FAS_litters.csv")
+
+litters_df_abs = 
+  janitor::clean_names(litters_df_abs)
+```
+
+# Importing FAS Pups CSV
+Now importing the FAS pups dataset.
+
+```{r}
+pups_df = 
+  read_csv("Data/FAS_pups.csv")
+
+pups_df = 
+  janitor::clean_names(pups_df)
+
+pups_df
+```
+
+# Look at Data
+```{r}
+litters_df
+
+head(litters_df)
+tail(litters_df)
+```
+
+Can use 'view' to look at the entire dataframe (but will hide from the RMarkdown display becuase it's so big it would make things weird visually)
+```{r, eval=FALSE}
+view(litters_df)
+```
+
+Look at a data summary. The skimr skim function displays a visually pleasant output of the number of missing values per variable, min, max, and a histogram of responses.
+```{r}
+str(litters_df)
+
+skimr::skim(litters_df)
+```
+
+
+
+
