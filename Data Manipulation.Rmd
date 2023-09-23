@@ -23,6 +23,8 @@ pups_data = janitor::clean_names(pups_data)
 
 ```
 
+## Select
+
 # Keeping Only Relevant Columns with SELECT 
 Can specify the columns I want to keep by naming them in the `select` function:
 ```{r}
@@ -68,18 +70,94 @@ Columns specified in the `relocate` function will be moved to the front of the d
 relocate(litters_data, litter_number, pups_survive)
 ```
 
+## Filter
 
+# Include Only Certain Observations with FILTER 
+If the data table includes rows I don’t need for the current analysis, I should filter them based on logical expressions using the `filter` function. I often filter using comparison operators `(>, >=, <, <=, ==, and !=)`. Can also use `%in%` to detect if values appear in a set, and `is.na()` to find missing values. The results of comparisons are logical – the statement is TRUE or FALSE depending on the values compared – and can be combined with other comparisons using the logical operators `&` and `|`, or negated using `!`.
 
+Example ways to filter the litters:
 
+* gd_of_birth == 20
+* pups_born_alive >= 2
+* pups_survive != 4
+* !(pups_survive == 4)
+* group %in% c("Con7", "Con8")
+* group == "Con7" & gd_of_birth == 20
 
+# Omit Missing Observations with DROP_NA
+A very common filtering step requires omitting missing observations. Can do this with filter, but prof recommend using drop_na instead.
 
+* `drop_na(litters_data)` will remove any row with a missing value
+* `drop_na(litters_data, wt_increase)` will remove rows for which wt_increase is missing.
 
+## Mutate
+Can use mutate to change columns or create new ones. 
 
+This example creates a new variable measuring the difference between gd18_weight and gd0_weight and modifies the existing group variable:
+```{r}
+mutate(litters_data,
+  wt_gain = gd18_weight - gd0_weight,
+  group = str_to_lower(group)
+)
+```
+A few things in this example are worth noting:
 
+* The new variables can be functions of old variables
+* New variables appear at the end of the dataset in the order that they are created
+* Can overwrite old variables
+* Can create a new variable and immediately refer to (or change) it
 
+## Arrange
+Can arrange the rows in your data according to the values in one or more columns:
+```{r}
+head(arrange(litters_data, group, pups_born_alive), 10)
+```
 
+## |>
+For example, if I want to clean the column names, remove pups_survive, and create wt_gain. There are a couple of options for this kind of multi-step data manipulation:
 
+* Define intermediate datasets (or overwrite data at each stage)
+* Nest function calls
 
+The following is an example of the first option:
+```{r}
+litters_data_raw = read_csv("./data/FAS_litters.csv",
+  col_types = "ccddiiii")
+litters_data_clean_names = janitor::clean_names(litters_data_raw)
+litters_data_selected_cols = select(litters_data_clean_names, -pups_survive)
+litters_data_with_vars = 
+  mutate(
+    litters_data_selected_cols, 
+    wt_gain = gd18_weight - gd0_weight,
+    group = str_to_lower(group))
+litters_data_with_vars_without_missing = 
+  drop_na(litters_data_with_vars, wt_gain)
+litters_data_with_vars_without_missing
+```
 
+Piping allows us to turn this into a sequential chain by passing the result of one function call as an argument to the next function call:
+```{r}
+litters_data = 
+  read_csv("./data/FAS_litters.csv", col_types = "ccddiiii") |> 
+  janitor::clean_names() |> 
+  select(-pups_survive) |> 
+  mutate(
+    wt_gain = gd18_weight - gd0_weight,
+    group = str_to_lower(group)) |> 
+  drop_na(wt_gain)
 
+litters_data
+```
 
+There are some cases where what you’re piping isn’t going into the first argument. Here, using the placeholder `_` is necessary to indicate where the object being piped should go. 
+
+For example, to regress wt_gain on pups_born_alive, you might use:
+```{r}
+litters_data |>
+  lm(wt_gain ~ pups_born_alive, data = _) |>
+  broom::tidy()
+```
+
+Will see %>% a lot in code online. It was introduced first, and was very prevalent in tidyverse code for a long time before |> came along.
+
+Command + shift + M is the shortcut for a pipe.
