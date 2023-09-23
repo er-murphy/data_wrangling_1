@@ -4,8 +4,82 @@ output: html_document
 date: "2023-09-23"
 ---
 
-# Loading Libraries
-
+# Loading Libraries and Setup
+Instructs R to print only three lines of each tibble by default.
 ```{r setup}
 library(tidyverse )
+options(tibble.print_min = 3)
 ```
+
+# Loading Data and Cleaning Up Column Names
+```{r}
+litters_data = read_csv("./data/FAS_litters.csv", 
+                        col_types = "ccddiiii")
+litters_data = janitor::clean_names(litters_data)
+
+pups_data = read_csv("./data/FAS_pups.csv",
+                     col_types = "ciiiii")
+pups_data = janitor::clean_names(pups_data)
+
+```
+
+# Keeping Only Relevant Columns with SELECT 
+Can specify the columns I want to keep by naming them in the `select` function:
+```{r}
+select(litters_data, group, litter_number, gd0_weight, pups_born_alive)
+```
+
+Or could specify a range of column to keep:
+```{r}
+select(litters_data, group:gd_of_birth)
+```
+
+Or specify the columns to be removed:
+```{r}
+select(litters_data, -pups_survive)
+```
+
+We can rename variables as part of this process:
+```{r}
+select(litters_data, GROUP = group, LiTtEr_NuMbEr = litter_number)
+```
+
+There are some handy helper functions for `select`; read about all of them using `?select_helpers`. Will likely use `starts_with()`, `ends_with()`, and `contains()` often, especially when variables are named with suffixes or standard patterns.
+```{r}
+select(litters_data, starts_with("gd"))
+```
+
+`everything()` is handy for reorganizing columns without discarding anything:
+```{r}
+select(litters_data, litter_number, pups_survive, everything())
+```
+
+To pull a single variable out of a dataframe, rather than using `select`, use `pull`.
+
+# Renaming Columns with RENAME
+If I just want to rename something, can use `rename` instead of `select`. This will rename the variables I care about and keep everything else:
+```{r}
+rename(litters_data, GROUP = group, LiTtEr_NuMbEr = litter_number)
+```
+
+# Rearranging Columns with RELOCATE
+Columns specified in the `relocate` function will be moved to the front of the dataframe.
+```{r}
+relocate(litters_data, litter_number, pups_survive)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
