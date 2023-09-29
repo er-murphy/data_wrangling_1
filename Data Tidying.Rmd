@@ -70,16 +70,160 @@ print(pulse_df, n = 12)
 ```
 
 ## Learning Assessment
-In the litters data, the variables gd0_weight and gd18_weight give the weight of the mother mouse on gestational days 0 and 18. Write a data cleaning chain that retains only litter_number and these columns; produces new variables gd and weight; and makes gd a numeric variable taking values 0 and 18 (for the last part, you might want to use recode …).
+In the litters data, the variables gd0_weight and gd18_weight give the weight of the mother mouse on gestational days 0 and 18. Write a data cleaning chain that retains only litter_number and these columns; produces new variables gd and weight; and makes gd a numeric variable taking values 0 and 18 (for the last part, you might want to use recode).
 
 ```{r}
+litters = 
+  read_csv("Data/FAS_litters.csv") |> 
+  janitor::clean_names() |> 
+  select(litter_number:gd18_weight) |> 
+  pivot_longer(
+    gd0_weight:gd18_weight,
+    names_to = "gd", 
+    values_to = "weight") |>
+  mutate(
+    gd = case_match(
+      gd,
+      "gd0_weight"  ~ 0,
+      "gd18_weight" ~ 18
+    ))
+
+litters
+```
+
+# `PIVOT_WIDER`
+Sometimes untidy is better for human consumption, facilitating quicker comparisons for human readers.
+
+For example, this creates a "tidy" dataset
+```{r}
+analysis_result = 
+  tibble(
+    group = c("treatment", "treatment", "placebo", "placebo"),
+    time = c("pre", "post", "pre", "post"),
+    mean = c(4, 8, 3.5, 4)
+  )
+
+analysis_result
+```
+
+But this one using `pivot_longer` might be more readable
+```{r}
+pivot_wider(
+  analysis_result, 
+  names_from = "time", 
+  values_from = "mean")
+```
+
+In some cases I might use select to reorder columns, and (depending on the goal) use knitr::kable() to produce a nicer table for reading.
+
+# BINDING ROWS
+We’ve looked at single-table non-tidy data, but non-tidiness often stems from relevant data spread across multiple tables. In the simplest case, these tables are basically the same and can be stacked to produce a tidy dataset. That’s the setting in `LotR_words.xlsx`, where the word counts for different races and genders in each movie in the trilogy are spread across distinct data rectangles (these data are based on this example).
+
+To produce the desired tidy dataset, we first need to read each table and do some cleaning:
+```{r}
+fellowship_ring = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "B3:D6") |>
+  mutate(movie = "fellowship_ring")
+
+two_towers = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "F3:H6") |>
+  mutate(movie = "two_towers")
+
+return_king = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "J3:L6") |>
+  mutate(movie = "return_king")
+```
+
+Here it was necessary to add a variable to each dataframe indicating the movie; that information had stored elsewhere in the original spreadsheet. As an aside, the three code snippets above are all basically the same except for the range and the movie name – later we’ll see a better way to handle cases like this by writing our own functions, but this works for now.
+
+Once each table is ready to go, we can stack them up using `bind_rows` and tidy the result:
+```{r}
+lotr_tidy = 
+  bind_rows(fellowship_ring, two_towers, return_king) |>
+  janitor::clean_names() |>
+  pivot_longer(
+    female:male,
+    names_to = "gender", 
+    values_to = "words") |>
+  mutate(race = str_to_lower(race)) |> 
+  select(movie, everything()) 
+
+lotr_tidy
+```
+
+Having the data in this form will make it easier to make comparisons across movies, aggregate within races across the trilogy, and perform other analyses.
+
+# JOINING DATASETS
+Data can be spread across multiple related tables, in which case it is necessary to combine or join them prior to analysis. We’ll focus on the problem of combining two tables only; combining three or more is done step-by-step using the same ideas.
+
+There are four major ways join dataframes x and y:
+
+Inner: keeps data that appear in both x and y
+Left: keeps data that appear in x
+Right: keeps data that appear in y
+Full: keeps data that appear in either x or y
+Left joins are the most common, because they add data from a smaller table y into a larger table x without removing anything from x.
+
+As an example, consider the data tables in `FAS_pups.csv` and `FAS_litters.csv`, which are related through the `Litter Number` variable. The former contains data unique to each pup, and the latter contains data unique to each litter. We can combine these using a left join of litter data into pup data; doing so retains data on each pup and adds data in new columns.
+
+(While revisiting this example, take a look at the `group` variable in the `litters` dataset: this encodes both dose and day of treatment! We’ll fix that bit of untidiness as part of the processing pipeline. I’m also going to address a pet peeve of mine, which is coding sex as an ambiguous numeric variable.)
+
+```{r}
+pup_data = 
+  read_csv("./data/FAS_pups.csv") |>
+  janitor::clean_names() |>
+  mutate(
+    sex = 
+      case_match(
+        sex, 
+        1 ~ "male", 
+        2 ~ "female"),
+    sex = as.factor(sex))
+
+litter_data = 
+  read_csv("./data/FAS_litters.csv") |>
+  janitor::clean_names() |>
+  separate(group, into = c("dose", "day_of_tx"), sep = 3) |>
+  relocate(litter_number) |>
+  mutate(
+    wt_gain = gd18_weight - gd0_weight,
+    dose = str_to_lower(dose))
+
+fas_data = 
+  left_join(pup_data, litter_data, by = "litter_number")
+
+fas_data
+```
+
+We made the key explicit in the join. By default, the `*_join` functions in `dplyr` will try to determine the key(s) based on variable names in the datasets you want to join. This is often but not always sufficient, and an extra step to make the key clear will help you and others reading your code.
+
+Note that joining is not particularly amenable to the `|>` operator because it is fundamentally non-linear: two separate datasets are coming together, rather than a single dataset being processed in a step-by-step fashion.
+
+As a final point, the `*_join` functions are very much related to SQL syntax, but emphasize operations common to data analysis.
+
+## Learning Assessment
+The datasets in this zip file contain de-identified responses to surveys included in past years of this course. Both contain a unique student identifier; the first has responses to a question about operating systems, and the second has responses to questions about degree program and git experience. Write a code chunk that imports and cleans both datasets, and then joins them.
+```{r}
+os = 
+  read_csv("Data/surv_os.csv") |> 
+  janitor::clean_names() |> 
+  rename(id = what_is_your_uni, opsys = what_operating_system_do_you_use)
+
+git = 
+  read_csv("Data/surv_program_git.csv") |> 
+  janitor::clean_names() |> 
+  rename(
+    id = what_is_your_uni, 
+    prog = what_is_your_degree_program,
+    git_exp = which_most_accurately_describes_your_experience_with_git)
+
+survey = 
+  left_join(git, os, by = "id")
 
 ```
 
-
-
-
-
+## Note: Naming Conventions
+For a while, folks were using gather and spread instead of pivot_longer and pivot_wider. The new functions were updated for good reasons; gather and spread will still exist, but they’re going to be less common over time.
 
 
 
